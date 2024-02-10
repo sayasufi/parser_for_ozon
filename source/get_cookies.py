@@ -4,6 +4,7 @@ import time
 
 from selenium import webdriver
 
+def get_cookies(driver):
 browser = webdriver.Chrome()
 browser.get('https://www.ozon.ru/')
 

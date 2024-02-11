@@ -86,9 +86,9 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--name", help="Имя файла Excel", default=env("NAME"))
-    parser.add_argument("--rows", type=int, help="Количество строк", default=int(env("NUMBER_OF_PAGES")))
+    parser.add_argument("--pages", type=int, help="Количество строк", default=int(env("NUMBER_OF_PAGES")))
     parser.add_argument("--threshold", type=int, help="Пороговое значение процента заполненных ячеек",
                         default=int(env("FILTER")))
     args = parser.parse_args()
 
-    create_excel(args.name, args.rows, args.threshold)
+    create_excel(args.name, args.pages, args.threshold)

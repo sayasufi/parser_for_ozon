@@ -12,7 +12,7 @@
 <li><strong>Numpy</strong></li>
 </ul>
 
-## Установка
+## Запуск программы
 
 1. Создайте `venv` виртуальное окружение:
 
@@ -29,8 +29,8 @@ source virtual_env_name/Scripts/activate
 3. Загрузите файлы с репозитория
 
 ```bash
-git remote add origin https://github.com/sayasufi/weather_app.git
-git pull https://github.com/sayasufi/weather_app.git master
+git remote add origin https://github.com/sayasufi/parser_for_ozon.git
+git pull https://github.com/sayasufi/parser_for_ozon.git master
 ```
 
 4. Установите все необходимые зависимости:
@@ -39,17 +39,21 @@ git pull https://github.com/sayasufi/weather_app.git master
 pip install -r requirements.txt
 ```
 
-5. Запустите сервер:
+5. Запустите парсер:
 
 ```bash
-python manage.py runserver
+python source/main.py --name Видеокарта --pages 5 --threshold 20
+
+# Либо изменить файл utils/.env и запустить так
+python source/main.py
 ```
 
 ---
 
-## Скриншоты
+## Файл .env
+```bash
+NAME=3070 # Поисковый запрос
+NUMBER_OF_PAGES=1 # Кол-во страниц для парсинга
+FILTER=20 # Пороговое значения отсеивания свойств товара в процентах
+```
 
-<p align="center">
-  <img src="source/static/ss/a.png">
-  <img src="source/static/ss/b.png">
-</p>

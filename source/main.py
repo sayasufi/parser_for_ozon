@@ -1,11 +1,15 @@
+import argparse
+import logging
 import re
 
 import numpy as np
 import pandas as pd
 from bs4 import BeautifulSoup as bs4
+from environs import Env
 from selenium import webdriver
 
-from source.funcs import page_open, func_parse
+from utils.funcs import page_open, func_parse
+from logs.setup_logging import setup_logging
 
 
 def search(product_name: str, number_pages: int = 1):
@@ -13,10 +17,10 @@ def search(product_name: str, number_pages: int = 1):
     driver = webdriver.Chrome()
     list_products = []
     # начальная строка
-    url = f"https://www.ozon.ru/category/videokarty-i-karty-videozahvata-15720/?category_was_predicted=true&deny_category_prediction=true&from_global=true&text={product_name}"
+    url = f"https://www.ozon.ru/search/?text={product_name}&from_global=true"
     for page in range(1, number_pages + 1):
         # добавляем нужную страницу к url и отправляем в функцию pageOpen на скачку
-        source_text = page_open(f'{url}&page={page}', driver)
+        source_text = page_open(f'{url}&page={page}', driver, "utils/session")
 
         # удаляем из текста всякие комментарии, чтобы не болтались мертвым грузом. Но это не обязательно
         result = re.sub(r'<!.*?->', '', source_text)
@@ -28,6 +32,7 @@ def search(product_name: str, number_pages: int = 1):
         items = items_body.div.div
         # парсим данные
         list_products.extend(func_parse(items=items))
+        logging.info(f"Страниц пропаршено: {page} / {number_pages}")
 
     driver.quit()
     return list_products
@@ -40,7 +45,7 @@ def options_parser(row, options_set_in):
     return row
 
 
-def create_excel(product_name: str, number_pages: int = 1):
+def create_excel(product_name: str, number_pages: int = 1, percentage: int = 20):
     """Создание таблица excel со всеми товарами"""
 
     captured_data = search(product_name, number_pages)
@@ -60,8 +65,30 @@ def create_excel(product_name: str, number_pages: int = 1):
 
     df = df.apply(options_parser, axis=1, options_set_in=options_set)
     df = df.drop(columns=['options'])
-    df.to_csv('ozon_parse.csv')
+    # Расчет процента заполненных ячеек для каждого столбца
+    filled_percentage = df.count() / len(df) * 100
+
+    # Фильтрация столбцов по условию
+    filtered_columns = filled_percentage[filled_percentage >= percentage].index
+
+    # Удаление ненужных столбцов
+    df_filtered = df[filtered_columns]
+
+    df_filtered.to_csv('ozon_parse.csv')
+    logging.info("Таблица сохранена в файл ozon_parse.csv")
 
 
 if __name__ == '__main__':
-    create_excel("3070", 1)
+
+    setup_logging("logs/cache.log")
+    env = Env()
+    env.read_env("utils/.env")
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--name", help="Имя файла Excel", default=env("NAME"))
+    parser.add_argument("--rows", type=int, help="Количество строк", default=int(env("NUMBER_OF_PAGES")))
+    parser.add_argument("--threshold", type=int, help="Пороговое значение процента заполненных ячеек",
+                        default=int(env("FILTER")))
+    args = parser.parse_args()
+
+    create_excel(args.name, args.rows, args.threshold)

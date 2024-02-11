@@ -22,17 +22,17 @@ def valid_session(path: str = "session") -> bool:
         return True
 
 
-def page_open(url: str, driver) -> Optional[str]:
+def page_open(url: str, driver, session_path: str) -> Optional[str]:
     """Функция, удаляющая предыдущие cookies, подставляющая нужные и получающая конечный результат страницы"""
 
-    if not valid_session("session"):
+    if not valid_session(session_path):
         driver.get(url)
-        time.sleep(5)
-        pickle.dump(driver.get_cookies(), open("session", "wb"))
+        time.sleep(10)
+        pickle.dump(driver.get_cookies(), open(session_path, "wb"))
 
     driver.get(url)
     driver.delete_all_cookies()
-    for cookie in pickle.load(open("session", "rb")):
+    for cookie in pickle.load(open(session_path, "rb")):
         driver.add_cookie(cookie)
 
     # Получаем страницу
